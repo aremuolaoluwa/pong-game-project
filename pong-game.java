@@ -1,4 +1,4 @@
-//maxX = 1612, maxY = 720
+// maxX = 1612, maxY = 720
 
 int screenWidth = 1612; // set to your maxX
 int screenHeight = 720; // set to your maxY
@@ -11,7 +11,7 @@ int leftPaddleY = 0;
 int leftPaddleWidth = 30;
 int leftPaddleHeight = 100;
 
-// Right Paddle X and Y Position
+// Right paddle X and Y Position
 int rightPaddleX = 1500;
 int rightPaddleY = 600;
 
@@ -58,26 +58,26 @@ void draw() // runs forever
 {
   background(0);
 
-  // Left Paddle
+  // Draw Left Paddle
   fill(0, 255, 0);
   stroke(255, 0, 0);
   rect(leftPaddleX, leftPaddleY, leftPaddleWidth, leftPaddleHeight);
 
-  // Player One Score
+  // Draw Player One Score
   fill(255);
   textSize(scoreSize);
   text(playerOneScore, playerOneX, playerOneY);
 
-  // Ball
+  // Draw Ball
   fill(255);
   ellipse(ballX, ballY, ballWidth, ballHeight);
 
-  // Player Two Score
+  // Draw Player Two Score
   fill(255);
   textSize(scoreSize);
   text(playerTwoScore, playerTwoX, playerTwoY);
 
-  // Right Paddle
+  // Draw Right Paddle
   fill(0, 255, 0);
   stroke(255, 0, 0);
   rect(rightPaddleX, rightPaddleY, rightPaddleWidth, rightPaddleHeight);
@@ -89,8 +89,18 @@ void draw() // runs forever
 
   // Move ball if game is on
   if (gameOn) {
-    ballX = ballX + xSpeed;
-    ballY = ballY + ySpeed;
+    ballX += xSpeed;
+    ballY += ySpeed;
+  }
+
+  // Check for collision with left paddle
+  if (doesOverlap(leftPaddleX, leftPaddleY, leftPaddleWidth, leftPaddleHeight, ballX, ballY, radius)) {
+    xSpeed *= -1; // Reverse horizontal direction of the ball
+  }
+
+  // Check for collision with right paddle
+  if (doesOverlap(rightPaddleX, rightPaddleY, rightPaddleWidth, rightPaddleHeight, ballX, ballY, radius)) {
+    xSpeed *= -1; // Reverse horizontal direction of the ball
   }
 
   // Check if ball hits left or right walls
@@ -108,8 +118,11 @@ void draw() // runs forever
 
   // Check if ball hits top or bottom walls
   if ((ballY - radius <= 0) || (ballY + radius) >= screenHeight) {
-    ySpeed = ySpeed * -1; // Reverse direction
+    ySpeed *= -1; // Reverse vertical direction
   }
+
+  // Move paddles based on touch
+  movePaddles();
 }
 
 // Reset ball to center of the screen
@@ -118,4 +131,34 @@ void resetBall() {
   ballY = screenHeight / 2;
   xSpeed = 5;
   ySpeed = 5;
+}
+
+// Function to move paddles based on touch position
+void movePaddles() {
+  // Move left paddle if left side of screen is touched
+  if (mouseX < screenWidth / 2) {
+    leftPaddleY = constrain(mouseY, 0, screenHeight - leftPaddleHeight);
+  }
+  // Move right paddle if right side of screen is touched
+  if (mouseX > screenWidth / 2) {
+    rightPaddleY = constrain(mouseY, 0, screenHeight - rightPaddleHeight);
+  }
+}
+
+// Checks if the ball overlaps with a paddle
+boolean doesOverlap(int xPaddle, int yPaddle, int widthPaddle, int heightPaddle, int xBall, int yBall, int radius) {
+  int ballLeftEdge = xBall - radius;
+  int ballBottomEdge = yBall + radius;
+  int ballRightEdge = xBall + radius;
+  int ballTopEdge = yBall - radius;
+
+  int paddleLeftEdge = xPaddle;
+  int paddleBottomEdge = yPaddle + heightPaddle;
+  int paddleRightEdge = xPaddle + widthPaddle;
+  int paddleTopEdge = yPaddle;
+
+  return ballBottomEdge >= paddleTopEdge &&
+         ballTopEdge <= paddleBottomEdge &&
+         ballLeftEdge <= paddleRightEdge &&
+         ballRightEdge >= paddleLeftEdge;
 }
